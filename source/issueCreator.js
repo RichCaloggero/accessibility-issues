@@ -221,7 +221,14 @@ $("title").text ( $("#app .name").text() );
 
 $("#issues")
 .on ("click", ".create .add", function (e) {
+debug ("selected: ", $("#issues .selector")[0].selectedIndex);
+$("#issues .selector option[selected]").removeAttr ("selected");
+debug ("- selected: ", $("#issues .selector")[0].selectedIndex);
+$("#issues .selector option:last").attr ("selected", "true");
+debug ("- selected: ", $("#issues .selector")[0].selectedIndex);
+debug ("- value: ", $("#issues .selector").val());
 updateIssue ();
+
 return false;
 }) // create new issue
 
@@ -302,6 +309,7 @@ $full.html (data.html);
 
 function updateIssue (index = -1) {
 var invalid = checkValidity(getIssueFields().filter ("input"));
+debug ("updateIssue: index=", index);
 
 if (invalid.length > 0) {
 statusMessage ("Invalid issue; please correct and resubmit.");
@@ -350,21 +358,29 @@ function createIssueList ($issues, fieldNames) {
 } // createIssueList
 
 function createIssueTable (issues, fieldNames) {
-	return createEmptyElements ("table").append (
-	createEmptyElements("tr").append (createTableHeaders (["number"].concat (fieldNames))),
-	issues.map (	function (issue, index) {
-		var fieldValues = [index+1].concat (_.unzip(objectToOrderedPairs(issue, fieldNames))[1]);
-		return createEmptyElements ("tr").addClass ("issue")
+	return $("<table></table>").append (
+	$("<thead></thead>").append (
+$("<tr></tr>").append (createTableHeaders (["number"].concat (fieldNames))),
+), // append thead
+	
+$("<tbody></tbody>").append (
+issues.map (	function (issue, index) {
+		var fieldValues = [index+1].concat (_.unzip(objectToOrderedPairs(issue, project.fieldNames))[1]);
+		return $("<tr class='issue'></tr>")
 		.append (setContent(createEmptyElements("td", project.fieldNames.length), fieldValues));
 	}) // map
-	); // append
+	) // append tbody
+); // append
 
 	function createTableHeaders (fieldNames) {
-	return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
+return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
 	} // createTableHeaders
 
 function setContent ($elements, data) {
-return $elements.get().map ((index, element) => {$(element).text (data[index]); return element;});
+return $elements.map (function (index, element) {
+$(element).text (data[index]);
+return element;
+}); // map
 } // setContent
 
 } // createIssueTable
@@ -401,8 +417,16 @@ default: return _.bind($element.val, $element);
 } // issueField
 
 function generateIssueSelector (issues) {
-$("#issues .selector").empty()
+var $selector = $("#issues .selector");
+var selectedIssue = $selector.val();
+debug ("selectedIssue: ", selectedIssue);
+$selector.empty()
 .append (createIssueSelector (issues));
+
+if (selectedIssue > 0) {
+$selector[0].selectedIndex = selectedIssue+1;
+} // if
+
 } // generateIssueSelector
 
 function createIssueSelector (issues) {
