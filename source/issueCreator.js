@@ -109,7 +109,8 @@ statusMessage (`${e} -- cannot parse file.`);
 
 function getScreenshotData () {
 var imageData = reader.result;
-$("#issues .create [data-name=screenshot]").attr ("src", imageData);
+$("#issues .create [data-name=screenshot] img").attr ("src", imageData);
+statusMessage ("Screenshot loaded.");
 } // getScreenshotData
 }); // file.load
 return true;
@@ -221,12 +222,12 @@ $("title").text ( $("#app .name").text() );
 
 $("#issues")
 .on ("click", ".create .add", function (e) {
-debug ("selected: ", $("#issues .selector")[0].selectedIndex);
+//debug ("selected: ", $("#issues .selector")[0].selectedIndex);
 $("#issues .selector option[selected]").removeAttr ("selected");
-debug ("- selected: ", $("#issues .selector")[0].selectedIndex);
+//debug ("- selected: ", $("#issues .selector")[0].selectedIndex);
 $("#issues .selector option:last").attr ("selected", "true");
-debug ("- selected: ", $("#issues .selector")[0].selectedIndex);
-debug ("- value: ", $("#issues .selector").val());
+//debug ("- selected: ", $("#issues .selector")[0].selectedIndex);
+//debug ("- value: ", $("#issues .selector").val());
 updateIssue ();
 
 return false;
@@ -378,7 +379,7 @@ return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
 
 function setContent ($elements, data) {
 return $elements.map (function (index, element) {
-$(element).text (data[index]);
+$(element).html (data[index]);
 return element;
 }); // map
 } // setContent
@@ -386,14 +387,14 @@ return element;
 } // createIssueTable
 
 function getIssueData ($issue = getIssueFields()) {
-return $issue.get().map ((element) => issueField(element) ());
+return $issue.get().map ((element) => issueFieldAccessor (element) ());
 } // getIssueData
 
 function setIssueData (data, $issue = getIssueFields()) {
 return $issue.get().forEach (function (element, index) {
 var name = getFieldName ($(element));
 var value = (data instanceof Array)? data[index] : data[name];
-issueField(element) (value);
+issueFieldAccessor (element) (value);
 }); // forEach
 } // setIssueData
 
@@ -401,20 +402,20 @@ function getIssueFields () {
 return $("#issues .create [data-name]");
 } // getIssueFields
 
-function issueField (element) {
+function issueFieldAccessor (element, value) {
 var name = getFieldName ($(element));
 var $element = $(element);
 //debug ("issueField: ", name);
 
 switch (name) {
-case "screenshot": return _.bind($element.attr, $element, "src");
+//case "screenshot": return _.bind($element.attr, $element, "src");
 
-case "guideline-fullText": return _.bind($element.html, $element);
+case "screenshot" || "guideline-fullText": return _.bind($element.html, $element);
 
 default: return _.bind($element.val, $element);
 } // switch
 
-} // issueField
+} // issueFieldAccessor
 
 function generateIssueSelector (issues) {
 var $selector = $("#issues .selector");
